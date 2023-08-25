@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { createRoot } from "react-dom";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, } from 'react-router-dom';
 import "./App.css";
 import "./styles.css";
 import Home from "./components/Home";
@@ -8,12 +7,16 @@ import Faqs from "./components/Faqs";
 import ShoppingCart from "./components/ShoppingCart";
 import About from "./components/AboutUs";
 import Dashboard from "./components/Dashboard";
-import Quotation from "./components/quotation";
+import Quotation from "./components/Quotation";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import { CartProvider } from "./components/CartContext";
-import { UserProvider, useUserContext } from "./components/UserContext"; 
+import { UserProvider, useUserContext } from "./components/UserContext";
 import Footer from "./components/Footer";
+import CartIcon from './components/CartIcon';
+import PaymentPage from './components/PaymentPage';
+import ReceiptPage from './components/ReceiptPage';
+ 
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -39,9 +42,24 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-  function App() {
-    const { setUser } = useUserContext();
+function App() {
+  const { user, setUser } = useUserContext();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Effect to check for user data in sessionStorage and set the user if available
+  useEffect(() => {
+    const userFromSession = JSON.parse(sessionStorage.getItem("user"));
+    if (userFromSession) {
+      setUser(userFromSession);
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      sessionStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [isLoggedIn, user]);
 
   // Function to handle user login
   const handleLogin = async (formData) => {
@@ -72,13 +90,14 @@ class ErrorBoundary extends React.Component {
   // Function to handle user logout
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:5005/api/user/logout", {
+      const response = await fetch("https://captsoneprojectretailsalesappbackend.onrender.com/api/user/logout", {
         method: "POST",
       });
 
       if (response.ok) {
         setUser(null);
         setIsLoggedIn(false);
+        sessionStorage.removeItem("user"); // Remove user data from sessionStorage upon logout
       } else {
         // Handle logout error
         console.log("Error logging out.");
@@ -89,18 +108,18 @@ class ErrorBoundary extends React.Component {
   };
 
   return (
-    <CartProvider>
-      <UserProvider>
+    <UserProvider>
+      <CartProvider>
         <Router>
           <div>
-            <nav className="navbar navbar-expand-lg navbar-light bg-success">
+            <nav className="navbar navbar-expand-lg navbar-light - fixed top" style={{ backgroundColor: "#00c000" }}>
               <div className="container-fluid">
                 <Link to="/" className="navbar-brand text-light">
                   <img
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYFxu27SOpo6W4mFQtXd1UQShj_rRi5FhNdg&usqp=CAU"
                     alt="Safaricom Online Sales App"
                     className="me-2"
-                    style={{ height: "60px", width: "60px", borderRadius: "50%" }}
+                    style={{ height: "40px", width: "40px", borderRadius: "50%" }}
                   />
                   Safaricom Online Sales App
                 </Link>
@@ -118,122 +137,108 @@ class ErrorBoundary extends React.Component {
                 <div className="collapse navbar-collapse" id="navbarNav">
                   <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                     <li className="nav-item">
-                      <Link to="/" className="nav-link btn btn-success" aria-current="page">
+                      <Link to="/" className="nav-link btn btn-light" aria-current="page">
                         Home
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link to="/about" className="nav-link btn btn-success">
-                        About Us
+                      <Link to="/about" className="nav-link btn btn-light">
+                        About
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link to="/dashboard" className="nav-link btn btn-success">
+                      <Link to="/dashboard" className="nav-link btn btn-light">
                         Dashboard
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link to="/faqs" className="nav-link btn btn-success">
+                      <Link to="/faqs" className="nav-link btn btn-light">
                         FAQs
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link to="/quotation" className="nav-link btn btn-success">
+                      <Link to="/quotation" className="nav-link btn btn-light">
                         Quotation
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link to="/register" className="nav-link btn btn-success">
+                      <Link to="/register" className="nav-link btn btn-light">
                         Register
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link to="/login" className="nav-link btn btn-success">
+                      <Link to="/login" className="nav-link btn btn-light">
                         Login
                       </Link>
                     </li>
-                  </ul>
-                  <form className="d-flex ms-2 me-4">
-                    <input
-                      className="form-control me-2 ms-2"
-                      type="search"
-                      placeholder="Search"
-                      aria-label="Search"
-                    />
-                    <button className="btn btn-success me-2 ms-2" type="submit">
-                      Search
+
+                    <li className="nav-item">
+                      <Link to="/shoppingcart" className="nav-link btn btn-light">
+                        {/* Wrap the CartIcon component with a <span> element */}
+                        <span className="cart-icon-outline">
+                          <CartIcon />
+                        </span>
+                      </Link>
+                    </li>
+
+                    <button
+                      className="btn btn-light me-2 ms-2"
+                      onClick={() => window.location.reload()}
+                    >
+                      Refresh
                     </button>
-                  </form>
+                  </ul>
                 </div>
               </div>
             </nav>
 
+            {/* Display user details on the navbar */}
+            {isLoggedIn && user && (
+              <div className="navbar-text text-dark">
+                Welcome: {user.username}
+              </div>
+            )}
+
+            {/* Logout button */}
+            {isLoggedIn && (
+              <button className="btn btn-light" onClick={handleLogout}>
+                Logout
+              </button>
+            )}
+
             <ErrorBoundary>
               <Routes>
                 <Route path="/about" element={<About />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                {/* Conditionally render the Dashboard component */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    isLoggedIn ? (
+                      <Dashboard />
+                    ) : (
+                      <div className="alert alert-warning" role="alert">
+                        The user should log in to display products.
+                      </div>
+                    )
+                  }
+                />
                 <Route path="/faqs" element={<Faqs />} />
-                <Route path="/shoppingcart" element={<ShoppingCart />} />
+                <Route path="/paymentpage/:invoiceId" element={<PaymentPage />} />
                 <Route path="/quotation" element={<Quotation />} />
                 <Route path="/" element={<Home />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/login" element={<Login handleLogout={handleLogout} />} />
-                <Route path="/footer" element={<Footer />} />
+                <Route path="/login" element={<Login handleLogin={handleLogin} />} />
+                <Route path="/carticon" element={<CartIcon />} />
+                <Route path="/shoppingcart" element={<ShoppingCart />} />
+                <Route path="/receiptpage" element={<ReceiptPage />} />
               </Routes>
             </ErrorBoundary>
-
-            <footer id="footer" className="bg-success text-light">
-              <div className="container-fluid d-flex">
-                <span className="navbar-brand">CAPSTONE &trade;</span>
-                <span className="navbar-brand fs-6 ms-auto">Follow Us:</span>
-                <div className="social-icons">
-                  <a
-                    href="https://www.instagram.com/safaricomplc_/"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="instagram"
-                  >
-                    <i className="bi bi-instagram"></i>
-                  </a>
-                  <a
-                    href="https://web.facebook.com/SafaricomPLC"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="facebook"
-                  >
-                    <i className="bi bi-facebook"></i>
-                  </a>
-                  <a
-                    href="http://m.me/SafaricomZuri"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="whatsapp"
-                  >
-                    <i className="bi bi-whatsapp"></i>
-                  </a>
-                  <a
-                    href="https://www.tiktok.com/@safaricomplc?lang=en"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="tiktok"
-                  >
-                    <i className="bi bi-tiktok"></i>
-                  </a>
-                </div>
-              </div>
-              <div>
-                <h4>Contact Us</h4>
-                <ul>
-                  <li>Email: customercare@safaricom.co.ke</li>
-                  <li>Phone: 100 for prepaid and 200 for postpaid</li>
-                  <li>Address: 123 Main Street, Anytown USA</li>
-                </ul>
-              </div>
-            </footer>
           </div>
+          {/* Footer */}
+          <Footer />
         </Router>
-      </UserProvider>
-    </CartProvider>
+      </CartProvider>
+    </UserProvider>
   );
 }
 

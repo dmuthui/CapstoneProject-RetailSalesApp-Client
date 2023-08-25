@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './styles/register.css';
 
-const API_BASE_URL = 'http://localhost:5005/api'; 
+const API_BASE_URL = 'https://captsoneprojectretailsalesappbackend.onrender.com/api'; 
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -38,49 +39,45 @@ const Register = () => {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      {registrationSuccess ? (
-        <p>Registration successful! Please proceed to login.</p>
-      ) : (
-        <form onSubmit={handleRegister}>
-          <label>
-            Username:
-            <input
-              type="text"
-              name="username"
-              value={username}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <br />
-          <label>
-            Email:
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <br />
-          <label>
-            Password:
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <br />
-          <button type="submit">Register</button>
-        </form>
-      )}
-    </div>
+    <div id="register-form"> 
+    <h2 style={{ fontSize: '24px', marginBottom: '20px', color: 'orange', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)', fontWeight: 'bold' }}>REGISTER</h2>
+    <form onSubmit={handleRegister}>
+      <label>
+        Username:
+        <input
+          type="text"
+          name="username"
+          value={username}
+          onChange={handleInputChange}
+          required
+        />
+      </label>
+      <br />
+      <label>
+        Email:
+        <input
+          type="email"
+          name="email"
+          value={email}
+          onChange={handleInputChange}
+          required
+        />
+      </label>
+      <br />
+      <label>
+        Password:
+        <input
+          type="password"
+          name="password"
+          value={password}
+          onChange={handleInputChange}
+          required
+        />
+      </label>
+      <br />
+      <button type="submit">Register</button>
+    </form>
+  </div>
   );
 };
 
